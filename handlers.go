@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -28,7 +29,18 @@ func TodoShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	todoID := vars["todoId"]
 
-	fmt.Fprintln(w, "Todo Show", todoID)
+	id, err := strconv.Atoi(todoID)
+	if err != nil {
+		panic(err)
+	}
+	t := RepoFindTodo(id)
+
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(t); err != nil {
+		panic(err)
+	}
 }
 
 func TodoCreate(w http.ResponseWriter, r *http.Request) {
@@ -59,4 +71,19 @@ func TodoCreate(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(t); err != nil {
 		panic(err)
 	}
+}
+
+func TodoDestroy(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	todoID := vars["todoId"]
+
+	id, err := strconv.Atoi(todoID)
+	if err != nil {
+		panic(err)
+	}
+	RepoDestroyTodo(id)
+
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Println("{'message':'Deleted!'}")
 }
